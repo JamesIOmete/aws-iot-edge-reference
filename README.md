@@ -16,7 +16,7 @@ This is a portfolio artifact, not a tutorial. The architecture decisions documen
 **Related work:**
 - [`multicloud-sa-toolkit`](https://github.com/JamesIOmete/multicloud-sa-toolkit) — multi-cloud IaC reference, same deploy-and-teardown discipline
 - [`tf-plan-ai-reviewer`](https://github.com/JamesIOmete/tf-plan-ai-reviewer) — AI-assisted Terraform plan review, used in this repo's CI workflow
-- [`platformctl`](https://github.com/JamesIOmete/platformctl) — fleet management CLI; the Thing/policy structure here was designed to be consumed by a fleet management layer
+- [`iotctl`](https://github.com/JamesIOmete/iotctl) — operator CLI for this stack; queries device status, telemetry history, and excursion events directly from the infrastructure deployed here
 
 ---
 
@@ -285,7 +285,7 @@ Key design considerations:
 
 ### Fleet management integration
 
-[`platformctl`](https://github.com/JamesIOmete/platformctl) is a fleet management CLI designed to operate against a device registry structured like this repo's. The integration surface:
+[`iotctl`](https://github.com/JamesIOmete/iotctl) is the operator CLI designed to run against this stack. The integration surface:
 
 - Thing names follow `{fleet_id}-{device_type}-{serial}` convention — `platformctl` can query by fleet or device type without a separate index
 - Thing attributes (firmware version, hardware revision, deployment region) are stored as IoT Core Thing attributes, making them queryable via `ListThings` with attribute filters
@@ -319,7 +319,7 @@ At 10k+ device scale, the `ListThings` API rate limits become a constraint. The 
 
 - [`multicloud-sa-toolkit`](https://github.com/JamesIOmete/multicloud-sa-toolkit) — AWS, Azure, and GCP IaC reference implementations using the same deploy-and-teardown approach as this repo. UCx patterns tested on real cloud instances.
 - [`tf-plan-ai-reviewer`](https://github.com/JamesIOmete/tf-plan-ai-reviewer) — Terraform plan AI review tool. The GitHub Actions workflow in `.github/workflows/terraform-plan.yml` integrates this for automated plan review on every PR.
-- [`platformctl`](https://github.com/JamesIOmete/platformctl) — Fleet management CLI. The device naming conventions and Thing attribute schema in this repo were designed to be consumed by `platformctl`.
+- [`iotctl`](https://github.com/JamesIOmete/iotctl) — Operator CLI for this stack. Queries device status, telemetry history, and excursion events directly from the infrastructure deployed here. Built in Go using AWS SDK v2 and Cobra.
 
 ---
 
