@@ -1,0 +1,2 @@
+# Simulator dependencies
+paho-mqtt>=2.0,<3.0   # MQTT client — supports MQTTv311, TLS, QoS 1

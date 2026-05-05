@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------------------
+# Certificates — never commit private key material
+# ---------------------------------------------------------------------------
+simulator/certs/*.pem.crt
+simulator/certs/*.pem.key
+simulator/certs/AmazonRootCA1.pem
+
+# ---------------------------------------------------------------------------
+# Terraform
+# ---------------------------------------------------------------------------
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars         # contains account-specific values and cert ARNs
+terraform/tfplan
+terraform/*.tfstate
+terraform/*.tfstate.backup
+lambda/processor.zip               # built by Terraform archive_file data source
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+.pytest_cache/
+
+# No bundled packages — Lambda processor uses stdlib only.
+
+# ---------------------------------------------------------------------------
+# IDE / OS
+# ---------------------------------------------------------------------------
+.DS_Store
+.idea/
+.vscode/
+*.swp

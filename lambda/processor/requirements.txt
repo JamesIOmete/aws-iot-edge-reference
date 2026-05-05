@@ -1,0 +1,6 @@
+# Lambda processor — no third-party runtime dependencies.
+# boto3 is provided by the Lambda runtime environment.
+# stdlib only: json, logging, os, datetime, dataclasses, re, typing.
+#
+# For local development and testing only:
+#   pip install boto3

@@ -1,0 +1,101 @@
+name: Terraform Plan + AI Review
+
+on:
+  pull_request:
+    paths:
+      - "terraform/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write   # needed to post plan output as a PR comment
+
+jobs:
+  terraform-plan:
+    name: Plan
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "~1.6"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Terraform init
+        run: terraform init -input=false
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        id: plan
+        run: |
+          terraform plan \
+            -input=false \
+            -no-color \
+            -out=tfplan \
+            -var="alert_email=" \
+            2>&1 | tee plan_output.txt
+
+          # Capture exit code without failing the step
+          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tfplan
+          path: terraform/tfplan
+          retention-days: 7
+
+      # Integrates with tf-plan-ai-reviewer for automated plan review.
+      # See: https://github.com/jward-adheretech/tf-plan-ai-reviewer
+      - name: AI plan review
+        if: github.event_name == 'pull_request'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          pip install tf-plan-ai-reviewer --quiet
+          tf-plan-review --plan-file plan_output.txt --output-format github-comment \
+            > ai_review.md || true  # Non-fatal — plan review is advisory
+
+      - name: Post plan + AI review as PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('terraform/plan_output.txt', 'utf8');
+            const aiReview = fs.existsSync('terraform/ai_review.md')
+              ? fs.readFileSync('terraform/ai_review.md', 'utf8')
+              : '_AI review unavailable._';
+
+            const body = [
+              '## Terraform Plan',
+              '```',
+              plan.slice(0, 60000),  // GitHub comment limit
+              '```',
+              '',
+              '## AI Review',
+              aiReview,
+            ].join('\n');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });

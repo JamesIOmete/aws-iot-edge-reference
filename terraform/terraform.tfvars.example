@@ -1,0 +1,34 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is .gitignored — never commit real certificate ARNs
+# or account-specific values to source control.
+
+aws_region  = "us-east-1"
+project     = "iot-coldchain"
+environment = "dev"
+domain      = "coldchain"
+
+# Device IDs to register as IoT Things.
+# Add one entry per physical or simulated device.
+device_ids = [
+  "cold-chain-sim-01",
+]
+
+# Map each device_id to its pre-provisioned IoT certificate ARN.
+# Run the provisioning sequence in simulator/certs/README.md first,
+# then paste the ARNs here.
+certificate_arns = {
+  "cold-chain-sim-01" = "arn:aws:iot:us-east-1:ACCOUNT_ID:cert/CERTIFICATE_ID"
+}
+
+# Telemetry thresholds
+temp_excursion_threshold_c = 8.0
+battery_low_threshold_pct  = 15
+device_silence_minutes     = 5
+telemetry_ttl_days         = 90
+
+# Alerting — set to your email or leave empty to skip SNS email subscription
+alert_email = ""
+
+# Lambda
+lambda_log_retention_days   = 30
+lambda_reserved_concurrency = -1  # -1 = unreserved
