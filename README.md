@@ -14,9 +14,9 @@ A production-pattern AWS IoT reference implementation for cold chain and cargo m
 This is a portfolio artifact, not a tutorial. The architecture decisions documented below reflect 14 years of enterprise IoT and cloud architecture work — the goal is to show *why* each design choice was made, not just that it runs. If you're evaluating patterns for a real cold chain deployment, the `docs/` directory has more depth. If you're a hiring manager skimming for signal, the Design Decisions section is where to spend your 90 seconds.
 
 **Related work:**
-- [`multicloud-sa-toolkit`](https://github.com/jward-adheretech/multicloud-sa-toolkit) — multi-cloud IaC reference, same deploy-and-teardown discipline
-- [`tf-plan-ai-reviewer`](https://github.com/jward-adheretech/tf-plan-ai-reviewer) — AI-assisted Terraform plan review, used in this repo's CI workflow
-- [`platformctl`](https://github.com/jward-adheretech/platformctl) — fleet management CLI; the Thing/policy structure here was designed to be consumed by a fleet management layer
+- [`multicloud-sa-toolkit`](https://github.com/JamesIOmete/multicloud-sa-toolkit) — multi-cloud IaC reference, same deploy-and-teardown discipline
+- [`tf-plan-ai-reviewer`](https://github.com/JamesIOmete/tf-plan-ai-reviewer) — AI-assisted Terraform plan review, used in this repo's CI workflow
+- [`platformctl`](https://github.com/JamesIOmete/platformctl) — fleet management CLI; the Thing/policy structure here was designed to be consumed by a fleet management layer
 
 ---
 
@@ -92,7 +92,7 @@ At sustained high throughput (>1000 messages/second), the Lambda cold-start prof
 
 ### Why Terraform over CDK or SAM
 
-Explicit resource model, readable plan output, and broad team familiarity. The `terraform plan` output is human-readable and reviewable in a pull request — the GitHub Actions workflow in this repo sends the plan to [`tf-plan-ai-reviewer`](https://github.com/jward-adheretech/tf-plan-ai-reviewer) for an automated review pass before any `apply`. CDK and SAM both generate CloudFormation, which is harder to review at a glance and less portable across teams.
+Explicit resource model, readable plan output, and broad team familiarity. The `terraform plan` output is human-readable and reviewable in a pull request — the GitHub Actions workflow in this repo sends the plan to [`tf-plan-ai-reviewer`](https://github.com/JamesIOmete/tf-plan-ai-reviewer) for an automated review pass before any `apply`. CDK and SAM both generate CloudFormation, which is harder to review at a glance and less portable across teams.
 
 Terraform's state model also makes teardown explicit and auditable, which matters when the goal is a clean deploy-and-destroy workflow for a portfolio or evaluation environment.
 
@@ -243,7 +243,7 @@ Key design considerations:
 
 ### Fleet management integration
 
-[`platformctl`](https://github.com/jward-adheretech/platformctl) is a fleet management CLI designed to operate against a device registry structured like this repo's. The integration surface:
+[`platformctl`](https://github.com/JamesIOmete/platformctl) is a fleet management CLI designed to operate against a device registry structured like this repo's. The integration surface:
 
 - Thing names follow `{fleet_id}-{device_type}-{serial}` convention — `platformctl` can query by fleet or device type without a separate index
 - Thing attributes (firmware version, hardware revision, deployment region) are stored as IoT Core Thing attributes, making them queryable via `ListThings` with attribute filters
@@ -275,9 +275,9 @@ At 10k+ device scale, the `ListThings` API rate limits become a constraint. The 
 
 ## Related work
 
-- [`multicloud-sa-toolkit`](https://github.com/jward-adheretech/multicloud-sa-toolkit) — AWS, Azure, and GCP IaC reference implementations using the same deploy-and-teardown approach as this repo. UCx patterns tested on real cloud instances.
-- [`tf-plan-ai-reviewer`](https://github.com/jward-adheretech/tf-plan-ai-reviewer) — Terraform plan AI review tool. The GitHub Actions workflow in `.github/workflows/terraform-plan.yml` integrates this for automated plan review on every PR.
-- [`platformctl`](https://github.com/jward-adheretech/platformctl) — Fleet management CLI. The device naming conventions and Thing attribute schema in this repo were designed to be consumed by `platformctl`.
+- [`multicloud-sa-toolkit`](https://github.com/JamesIOmete/multicloud-sa-toolkit) — AWS, Azure, and GCP IaC reference implementations using the same deploy-and-teardown approach as this repo. UCx patterns tested on real cloud instances.
+- [`tf-plan-ai-reviewer`](https://github.com/JamesIOmete/tf-plan-ai-reviewer) — Terraform plan AI review tool. The GitHub Actions workflow in `.github/workflows/terraform-plan.yml` integrates this for automated plan review on every PR.
+- [`platformctl`](https://github.com/JamesIOmete/platformctl) — Fleet management CLI. The device naming conventions and Thing attribute schema in this repo were designed to be consumed by `platformctl`.
 
 ---
 
@@ -287,4 +287,4 @@ MIT — see [LICENSE](LICENSE).
 
 ---
 
-*James Ward · IoT & Cloud Solutions Architect · [LinkedIn](https://linkedin.com/in/jward) · [GitHub](https://github.com/jward-adheretech)*
+*James Ward · IoT & Cloud Solutions Architect · [LinkedIn](https://linkedin.com/in/james-ward-95a81a2/) · [GitHub](https://github.com/JamesIOmete)*
