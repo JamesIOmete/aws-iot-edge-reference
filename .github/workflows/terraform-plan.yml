@@ -74,7 +74,7 @@ jobs:
       # ANTHROPIC_API_KEY is not set. Non-fatal — plan review is advisory.
       - name: AI plan review
         if: github.event_name == 'pull_request'
-        uses: JamesIOmete/tf-plan-ai-reviewer@726c6ca28700244fa8ced495f31f5dcd967f517e
+        uses: JamesIOmete/tf-plan-ai-reviewer@v1.0.0
         with:
           plan-json-path: plan.json
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
