@@ -27,6 +27,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "~1.6"
+          terraform_wrapper: false   # required for plan -json to produce clean output
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -41,61 +42,42 @@ jobs:
       - name: Terraform validate
         run: terraform validate
 
-      - name: Terraform plan
+      - name: Terraform plan (text + JSON)
         id: plan
         run: |
+          # Text output — for the PR comment readability
           terraform plan \
             -input=false \
             -no-color \
-            -out=tfplan \
             -var="alert_email=" \
-            2>&1 | tee plan_output.txt
+            2>&1 | tee ../plan_output.txt
 
-          # Capture exit code without failing the step
-          echo "exit_code=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+          # JSON output — for the AI reviewer
+          terraform plan \
+            -input=false \
+            -no-color \
+            -json \
+            -var="alert_email=" \
+            2>/dev/null > ../plan.json
 
-      - name: Upload plan artifact
+      - name: Upload plan artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tfplan
-          path: terraform/tfplan
+          path: |
+            plan_output.txt
+            plan.json
           retention-days: 7
 
-      # Integrates with tf-plan-ai-reviewer for automated plan review.
-      # See: https://github.com/jward-adheretech/tf-plan-ai-reviewer
+      # AI plan review via tf-plan-ai-reviewer.
+      # Uses Anthropic Claude by default; falls back to OpenAI if
+      # ANTHROPIC_API_KEY is not set. Non-fatal — plan review is advisory.
       - name: AI plan review
         if: github.event_name == 'pull_request'
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          pip install tf-plan-ai-reviewer --quiet
-          tf-plan-review --plan-file plan_output.txt --output-format github-comment \
-            > ai_review.md || true  # Non-fatal — plan review is advisory
-
-      - name: Post plan + AI review as PR comment
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
+        uses: JamesIOmete/tf-plan-ai-reviewer@master
         with:
-          script: |
-            const fs = require('fs');
-            const plan = fs.readFileSync('terraform/plan_output.txt', 'utf8');
-            const aiReview = fs.existsSync('terraform/ai_review.md')
-              ? fs.readFileSync('terraform/ai_review.md', 'utf8')
-              : '_AI review unavailable._';
-
-            const body = [
-              '## Terraform Plan',
-              '```',
-              plan.slice(0, 60000),  // GitHub comment limit
-              '```',
-              '',
-              '## AI Review',
-              aiReview,
-            ].join('\n');
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body,
-            });
+          plan-json-path: plan.json
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          anthropic-model: claude-sonnet-4-20250514
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
