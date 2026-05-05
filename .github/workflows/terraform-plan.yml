@@ -78,6 +78,6 @@ jobs:
         with:
           plan-json-path: plan.json
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          anthropic-model: claude-sonnet-4-20250514
+          anthropic-model: claude-sonnet-4-5
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
