@@ -22,32 +22,74 @@ This is a portfolio artifact, not a tutorial. The architecture decisions documen
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  Edge Device (Simulated)                                            │
-│  Python · X.509 client cert · MQTT over TLS 1.2                    │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │  MQTT  dt/coldchain/{device_id}/telemetry
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  AWS IoT Core                                                       │
-│  Thing Registry · Per-device X.509 policy · Topic rule             │
-└──────────────────────────────┬──────────────────────────────────────┘
-                               │  IoT Rules Engine → Lambda trigger
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│  Lambda: telemetry-processor                                        │
-│  Payload validation · Excursion detection · DLQ on failure         │
-└──────────┬────────────────────────────────────────┬────────────────┘
-           │                                        │
-           ▼                                        ▼
-┌──────────────────────┐              ┌─────────────────────────────┐
-│  DynamoDB            │              │  CloudWatch                  │
-│  Telemetry table     │              │  Alarms · Dashboard · Logs  │
-│  PK: device_id       │              │  Excursion · Battery · Silence│
-│  SK: timestamp       │              └─────────────────────────────┘
-│  TTL: 90 days        │
-└──────────────────────┘
+```mermaid
+flowchart TD
+    subgraph EDGE["🌡  Edge — Simulated Device"]
+        direction TB
+        SIM["device_simulator.py\nPython · paho-mqtt"]
+        CERTS["X.509 client certificate\nper-device identity"]
+    end
+
+    subgraph IOTCORE["☁  AWS IoT Core"]
+        direction LR
+        THING["Thing Registry\nper-device policy"]
+        RULE["Topic Rule\ndt/coldchain/+/telemetry"]
+        THING --> RULE
+    end
+
+    subgraph PROCESSOR["λ  Lambda — telemetry-processor"]
+        direction TB
+        VALIDATE["Payload validation\nstdlib · no dependencies"]
+        EXCURSION["Excursion detection\ntemp · battery · shock"]
+        WRITE["DynamoDB write\nidempotent · TTL computed"]
+        VALIDATE --> EXCURSION --> WRITE
+    end
+
+    subgraph STORAGE["🗄  DynamoDB"]
+        TABLE["iot-coldchain-dev-telemetry\nPK: device_id  SK: timestamp\nGSI: fleet_id  TTL: 90d  PITR: on"]
+    end
+
+    subgraph OBSERVABILITY["📊  CloudWatch Observability"]
+        direction LR
+        LOGS["Log Group\nstructured JSON events"]
+        FILTERS["Metric Filters\nevent_type matching"]
+        ALARMS["Alarms\nExcursion · Battery\nSilence · DLQ depth"]
+        DASHBOARD["Operations Dashboard\n6-widget ops view"]
+        LOGS --> FILTERS --> ALARMS
+        ALARMS --> DASHBOARD
+    end
+
+    subgraph ALERTING["🔔  Alerting"]
+        SNS["SNS Topic\nemail · PagerDuty · Opsgenie"]
+    end
+
+    subgraph DLQ_BOX["⚠  Failure Path"]
+        DLQ["SQS Dead Letter Queue\n14-day retention"]
+    end
+
+    SIM -- "MQTT/TLS 1.2\nport 8883 · QoS 1" --> IOTCORE
+    CERTS -. "mutual TLS auth" .-> IOTCORE
+    RULE -- "IoT Rules Engine\nLambda trigger" --> PROCESSOR
+    WRITE -- "PutItem\nconditional write" --> STORAGE
+    VALIDATE -- "structured logs\nJSON event_type" --> LOGS
+    PROCESSOR -. "on failure\nafter 2 retries" .-> DLQ_BOX
+    ALARMS -- "SNS publish" --> ALERTING
+
+    classDef edge fill:#0F6E56,stroke:#085041,color:#E1F5EE
+    classDef aws fill:#185FA5,stroke:#0C447C,color:#E6F1FB
+    classDef lambda fill:#BA7517,stroke:#854F0B,color:#FAEEDA
+    classDef storage fill:#534AB7,stroke:#3C3489,color:#EEEDFE
+    classDef observe fill:#444441,stroke:#2C2C2A,color:#F1EFE8
+    classDef alert fill:#993C1D,stroke:#712B13,color:#FAECE7
+    classDef dlq fill:#993C1D,stroke:#712B13,color:#FAECE7
+
+    class SIM,CERTS edge
+    class THING,RULE aws
+    class VALIDATE,EXCURSION,WRITE lambda
+    class TABLE storage
+    class LOGS,FILTERS,ALARMS,DASHBOARD observe
+    class SNS alert
+    class DLQ dlq
 ```
 
 Data flows one direction. The device has no inbound surface — no open ports, no polling endpoint, no management plane accessible from the device side. Commands and OTA updates (described in [Architecture Extensions](#architecture-extensions)) use a separate topic namespace and Device Shadow, not a callback into this flow.
