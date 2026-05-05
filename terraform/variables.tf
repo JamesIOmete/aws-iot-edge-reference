@@ -93,7 +93,7 @@ variable "telemetry_ttl_days" {
     food and pharma cold chain; adjust to your compliance requirement.
   EOT
   type        = number
-  default     = 90
+  default     = 91
 }
 
 # ---------------------------------------------------------------------------
