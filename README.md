@@ -17,6 +17,7 @@ This is a portfolio artifact, not a tutorial. The architecture decisions documen
 - [`multicloud-sa-toolkit`](https://github.com/JamesIOmete/multicloud-sa-toolkit) — multi-cloud IaC reference, same deploy-and-teardown discipline
 - [`tf-plan-ai-reviewer`](https://github.com/JamesIOmete/tf-plan-ai-reviewer) — AI-assisted Terraform plan review, used in this repo's CI workflow
 - [`iotctl`](https://github.com/JamesIOmete/iotctl) — operator CLI for this stack; queries device status, telemetry history, and excursion events directly from the infrastructure deployed here
+- [`iot-ops-agent`](https://github.com/JamesIOmete/iot-ops-agent) — autonomous AI agent that operates against this stack. Monitors fleet health, investigates alarms via runbook execution, and produces structured incident reports — with bounded tool use, escalation design, and full reasoning logs.
 
 ---
 
