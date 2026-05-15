@@ -320,6 +320,8 @@ At 10k+ device scale, the `ListThings` API rate limits become a constraint. The 
 
 - [`multicloud-sa-toolkit`](https://github.com/JamesIOmete/multicloud-sa-toolkit) — AWS, Azure, and GCP IaC reference implementations using the same deploy-and-teardown approach as this repo. UCx patterns tested on real cloud instances.
 - [`tf-plan-ai-reviewer`](https://github.com/JamesIOmete/tf-plan-ai-reviewer) — Terraform plan AI review tool. The GitHub Actions workflow in `.github/workflows/terraform-plan.yml` integrates this for automated plan review on every PR.
+- [`k8s-ai-inference-deployment-demo`](https://github.com/JamesIOmete/k8s-ai-inference-deployment-demo) — Kubernetes deployment patterns for an AI-style inference service in the same telemetry domain; the container orchestration counterpart to this Lambda-based cloud architecture
+- [`gpu-rack-anomaly-detection-pytorch`](https://github.com/JamesIOmete/gpu-rack-anomaly-detection-pytorch) — PyTorch anomaly detection pipeline for GPU rack telemetry; produces structured anomaly reports suitable for handoff to an agentic operations layer like iot-ops-agent
 - [`iotctl`](https://github.com/JamesIOmete/iotctl) — Operator CLI for this stack. Queries device status, telemetry history, and excursion events directly from the infrastructure deployed here. Built in Go using AWS SDK v2 and Cobra.
 
 ---
@@ -328,6 +330,6 @@ At 10k+ device scale, the `ListThings` API rate limits become a constraint. The 
 
 MIT — see [LICENSE](LICENSE).
 
+- [`k8s-ai-inference-deployment-demo`](https://github.com/JamesIOmete/k8s-ai-inference-deployment-demo) — Kubernetes deployment patterns for an AI-style inference service in the same telemetry domain; the container orchestration counterpart to this Lambda-based cloud architecture
+- [`gpu-rack-anomaly-detection-pytorch`](https://github.com/JamesIOmete/gpu-rack-anomaly-detection-pytorch) — PyTorch anomaly detection pipeline for GPU rack telemetry; produces structured anomaly reports suitable for handoff to an agentic operations layer like iot-ops-agent
 ---
-
-*James Ward · IoT & Cloud Solutions Architect · [LinkedIn](https://linkedin.com/in/james-ward-95a81a2/) · [GitHub](https://github.com/JamesIOmete)*
